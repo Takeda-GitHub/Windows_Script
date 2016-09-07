@@ -1,0 +1,106 @@
+<job id="foo">
+
+<script language="VBScript">
+
+ 'InputBoxを出して、ユーザから入力された値を返す関数
+
+ function vbinput(msg)
+
+    vbinput = InputBox(msg,"makehtml")
+
+ end function
+
+</script>
+
+
+
+<script language="JavaScript">
+//上で定義した関数を呼び出す
+var name = vbinput("書き出すIDを記入して下さい");
+var objShell = new ActiveXObject("Shell.Application");
+var fs = WScript.CreateObject("Scripting.FileSystemObject");
+var targetPath = "D:\\動画まとめサイト\\"+name;
+
+var enuItems = new Enumerator (objShell.Namespace(objShell.Namespace(targetPath)).Items());
+
+var Array_hako = new Array();
+var file = fs.CreateTextFile(targetPath+"\\"+name+".html",true);
+
+
+for (; !enuItems.atEnd(); enuItems.moveNext()) {
+	var item = enuItems.item();
+	var ntime = item.ExtendedProperty("Duration");
+	var time_math = ntime / 10000000;
+	var frame = time_math * 30;
+	var time_number = new Number(frame);
+	var time = Math.round(time_number);
+	var type = item.ExtendedProperty("Type");
+	if(type == "QuickTime ムービー" || type == "ビデオ クリップ" || type == "AVI ファイル")
+		{
+			//WScript.Echo( item.Name );
+			var Item_Name = item.name;
+			var Out = Item_Name.lastIndexOf(".");
+			var Final_Name = Item_Name.slice(0,Out);
+
+			Array_hako.push(Final_Name);
+			Array_hako.push(time+"フレーム");
+			//file.WriteLine( item.Name );
+			//file.WriteLine( time+"フレーム" );
+		}
+}
+//Array_hako.sort();
+//WScript.Echo( Array_hako );
+//ここからHTML作成
+file.WriteLine( '<?xml version="1.0" encoding="Shift_JIS"?>' );
+file.WriteLine( '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' );
+file.WriteLine( '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">' );
+file.WriteLine( '<head>' );
+file.WriteLine( '	<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">' );
+file.WriteLine( '	<title>'+name+'</title>' );
+file.WriteLine( '	<link rel="stylesheet" type="text/css" href="../layout.css" />' );
+file.WriteLine( '	<style type="text/css">' );
+file.WriteLine( '		div.imagebox {' );
+file.WriteLine( '		   border: solid 2px #000000;' );
+file.WriteLine( '		   background-color: #eeeeff;' );
+file.WriteLine( '		   width: 350px;' );
+file.WriteLine( '		   float: left;' );
+file.WriteLine( '		   margin: 5px;' );
+file.WriteLine( '		}' );
+file.WriteLine( '		p.image, p.caption {' );
+file.WriteLine( '		   text-align: center;' );
+file.WriteLine( '		   margin: 5px;' );
+file.WriteLine( '		}' );
+file.WriteLine( '		p.caption {' );
+file.WriteLine( '		   border: solid 1px #000000;' );
+file.WriteLine( '		   font-size: 80%;' );
+file.WriteLine( '		   color: darkblue;' );
+file.WriteLine( '		}' );
+file.WriteLine( '		p.exp {' );
+file.WriteLine( '			clear: left;' );
+file.WriteLine( '		}' );
+file.WriteLine( '	</style>' );
+file.WriteLine( '</head>' );
+file.WriteLine( '<body>' );
+file.WriteLine( '	<!-- ヘッダ -->' );
+file.WriteLine( '	<div id="footer"><h1><a href="../top.htm">'+name+'              Topへ</a></h1>' );
+file.WriteLine( '	</div>' );
+
+
+	for(var i=0; i<Array_hako.length; i++)
+		{
+			//WScript.Echo( Array_hako[i] );
+			file.WriteLine( '	<div class="imagebox">' );
+			file.WriteLine( '		<p class="image"><img src="'+Array_hako[i]+'.gif" alt="'+Array_hako[i]+'" ></p>' );
+			file.WriteLine( '		<p class="caption">'+Array_hako[i]+'</p>' );
+			file.WriteLine( '		<p class="caption">フレーム数：'+Array_hako[i+1]+'</p>' );
+			file.WriteLine( '	</div>' );
+			i = i + 1;
+		}
+file.WriteLine( '</body>' );
+file.WriteLine( '</html>' );
+file.Close();
+fs = null;
+objShell = null;
+
+</script>
+</job>
